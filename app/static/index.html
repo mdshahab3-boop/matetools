@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MateTools — Free PDF &amp; Document Tools by MateOps</title>
+  <meta name="description" content="Free, privacy-first document tools. Convert PDF to Word, Word to PDF, merge, split, compress and more. Files are processed in seconds and never stored." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark">MT</span>
+        <span class="brand-text">MateTools</span>
+        <span class="brand-by">by MateOps</span>
+      </a>
+      <a class="header-cta" href="https://mateops.com.au" target="_blank" rel="noopener">mateops.com.au ↗</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <h1>Free document tools that respect your privacy</h1>
+      <p class="hero-sub">
+        Convert, merge, split and compress your files in seconds —
+        <strong>no account, no watermarks, completely free</strong>.
+      </p>
+      <div class="privacy-badge">
+        🔒 Your files are processed on our server and <strong>deleted within moments</strong>. We never store, read, or share them.
+      </div>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <div id="tool-grid" class="tool-grid"></div>
+  </main>
+
+  <!-- Working panel (shown when a tool is picked) -->
+  <div id="panel-overlay" class="panel-overlay" hidden>
+    <div class="panel" role="dialog" aria-modal="true">
+      <button class="panel-close" id="panel-close" aria-label="Close">×</button>
+      <div class="panel-head">
+        <span id="panel-icon" class="panel-icon"></span>
+        <div>
+          <h2 id="panel-title"></h2>
+          <p id="panel-desc"></p>
+        </div>
+      </div>
+
+      <label id="dropzone" class="dropzone" for="file-input">
+        <input type="file" id="file-input" hidden />
+        <span class="dz-icon">⬆</span>
+        <span class="dz-text">Click to choose a file, or drag it here</span>
+        <span id="dz-hint" class="dz-hint"></span>
+      </label>
+
+      <ul id="file-list" class="file-list"></ul>
+
+      <div id="options" class="options"></div>
+
+      <button id="run-btn" class="run-btn" disabled>Convert</button>
+
+      <div id="status" class="status" hidden></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><strong>MateTools</strong> — part of the <a href="https://mateops.com.au" target="_blank" rel="noopener">MateOps</a> platform.</p>
+      <p class="muted">Files are never stored. Everything runs on our own servers. Max file size is set by the operator.</p>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

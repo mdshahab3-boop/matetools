@@ -1,0 +1,42 @@
+# MateTools — runs entirely on your VPS. Cloudflare is only the front door
+# (DNS, TLS, CDN, WAF) via a Cloudflare Tunnel. No inbound ports are opened.
+#
+#   1. cp .env.example .env   and fill in CF_TUNNEL_TOKEN
+#   2. docker compose up -d --build
+#   3. In Cloudflare Zero Trust, point tools.mateops.com.au at http://app:8000
+#
+# Security note: the `app` service sits on an INTERNAL-only network and has no
+# outbound internet access. Only `cloudflared` can reach the internet, and it
+# reaches `app` over the private network to serve requests.
+
+services:
+  app:
+    build: .
+    image: matetools:latest
+    container_name: matetools-app
+    restart: unless-stopped
+    environment:
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-100}
+    tmpfs:
+      - /tmp          # all processing happens in RAM; nothing touches disk
+    networks:
+      - internal
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: matetools-tunnel
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - app
+    networks:
+      - internal      # to reach the app
+      - edge          # to reach Cloudflare
+
+networks:
+  internal:
+    internal: true    # app cannot phone home — extra privacy guarantee
+  edge:
+    driver: bridge
