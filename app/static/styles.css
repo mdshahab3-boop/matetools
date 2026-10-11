@@ -124,6 +124,9 @@ main.wrap { padding-top: 32px; padding-bottom: 48px; }
   padding: 20px;
   z-index: 50;
 }
+/* Respect the `hidden` attribute — the base rule's `display:grid` would
+   otherwise override the browser default and leave the modal always open. */
+.panel-overlay[hidden] { display: none; }
 .panel {
   position: relative;
   width: 100%; max-width: 520px;
