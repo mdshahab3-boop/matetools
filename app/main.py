@@ -145,8 +145,11 @@ async def tool_page(request: Request, slug: str):
         "tools": tool_list(), "related": related, "canonical": f"{SITE}/{slug}",
         "page_title": t["title"], "page_meta": t["meta"],
         "widget": json.dumps({
-            "endpoint": t["endpoint"], "accept": t["accept"],
-            "multiple": t["multiple"], "field": t["field"], "options": t["options"],
+            "endpoint": t["endpoint"], "accept": t.get("accept", ""),
+            "multiple": t.get("multiple", False), "field": t.get("field", "file"),
+            "options": t.get("options", []),
+            "mode": t.get("mode", "upload"), "input": t.get("input"),
+            "preview": t.get("preview", False), "cta": t.get("cta", "Convert"),
         }),
         "json_ld": json.dumps(schema),
         "max_mb": MAX_UPLOAD_MB,
@@ -261,6 +264,103 @@ async def api_pdf_to_images(file: UploadFile = File(...), dpi: int = Form(150)):
         src = await _save(file, wd)
         try:
             out, media, name = C.pdf_to_images(wd, src, dpi)
+        except C.ConversionError as e:
+            raise HTTPException(422, str(e))
+        return _deliver(out, media, name)
+
+
+# --- Phase 2 endpoints ------------------------------------------------------
+
+@app.post("/api/heic-to-jpg")
+async def api_heic_to_jpg(file: UploadFile = File(...)):
+    from . import converters as C
+    with tempfile.TemporaryDirectory() as wd:
+        src = await _save(file, wd)
+        try:
+            out, media, name = C.heic_to_jpg(wd, src)
+        except C.ConversionError as e:
+            raise HTTPException(422, str(e))
+        return _deliver(out, media, name)
+
+
+@app.post("/api/compress-image")
+async def api_compress_image(file: UploadFile = File(...), quality: str = Form("medium")):
+    from . import converters as C
+    with tempfile.TemporaryDirectory() as wd:
+        src = await _save(file, wd)
+        try:
+            out, media, name = C.compress_image(wd, src, quality)
+        except C.ConversionError as e:
+            raise HTTPException(422, str(e))
+        return _deliver(out, media, name)
+
+
+@app.post("/api/resize-image")
+async def api_resize_image(file: UploadFile = File(...), width: str = Form(""), height: str = Form("")):
+    from . import converters as C
+    with tempfile.TemporaryDirectory() as wd:
+        src = await _save(file, wd)
+        try:
+            out, media, name = C.resize_image(wd, src, width, height)
+        except C.ConversionError as e:
+            raise HTTPException(422, str(e))
+        return _deliver(out, media, name)
+
+
+@app.post("/api/qr-code")
+async def api_qr_code(text: str = Form("")):
+    from . import converters as C
+    with tempfile.TemporaryDirectory() as wd:
+        try:
+            out, media, name = C.qr_code(wd, text)
+        except C.ConversionError as e:
+            raise HTTPException(422, str(e))
+        return _deliver(out, media, name)
+
+
+@app.post("/api/rotate-pdf")
+async def api_rotate_pdf(file: UploadFile = File(...), angle: str = Form("90")):
+    from . import converters as C
+    with tempfile.TemporaryDirectory() as wd:
+        src = await _save(file, wd)
+        try:
+            out, media, name = C.rotate_pdf(wd, src, angle)
+        except C.ConversionError as e:
+            raise HTTPException(422, str(e))
+        return _deliver(out, media, name)
+
+
+@app.post("/api/protect-pdf")
+async def api_protect_pdf(file: UploadFile = File(...), password: str = Form("")):
+    from . import converters as C
+    with tempfile.TemporaryDirectory() as wd:
+        src = await _save(file, wd)
+        try:
+            out, media, name = C.protect_pdf(wd, src, password)
+        except C.ConversionError as e:
+            raise HTTPException(422, str(e))
+        return _deliver(out, media, name)
+
+
+@app.post("/api/unlock-pdf")
+async def api_unlock_pdf(file: UploadFile = File(...), password: str = Form("")):
+    from . import converters as C
+    with tempfile.TemporaryDirectory() as wd:
+        src = await _save(file, wd)
+        try:
+            out, media, name = C.unlock_pdf(wd, src, password)
+        except C.ConversionError as e:
+            raise HTTPException(422, str(e))
+        return _deliver(out, media, name)
+
+
+@app.post("/api/pdf-to-excel")
+async def api_pdf_to_excel(file: UploadFile = File(...)):
+    from . import converters as C
+    with tempfile.TemporaryDirectory() as wd:
+        src = await _save(file, wd)
+        try:
+            out, media, name = C.pdf_to_excel(wd, src)
         except C.ConversionError as e:
             raise HTTPException(422, str(e))
         return _deliver(out, media, name)

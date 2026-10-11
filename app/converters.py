@@ -199,3 +199,157 @@ def pdf_to_images(workdir, pdf_path, dpi=150):
             z.write(pth, f"page_{i + 1}.png")
     doc.close()
     return out, "application/zip", f"{stem}_images.zip"
+
+
+# --- Phase 2: image tools ---------------------------------------------------
+
+def heic_to_jpg(workdir, src_path):
+    import pillow_heif
+    pillow_heif.register_heif_opener()
+    try:
+        im = Image.open(src_path)
+    except Exception:
+        raise ConversionError("Could not read this image. Is it a valid HEIC/HEIF file?")
+    if im.mode not in ("RGB", "L"):
+        im = im.convert("RGB")
+    out = os.path.join(workdir, Path(src_path).stem + ".jpg")
+    im.save(out, "JPEG", quality=90)
+    return out, "image/jpeg", Path(src_path).stem + ".jpg"
+
+
+def compress_image(workdir, src_path, quality="medium"):
+    q = {"high": 85, "medium": 65, "low": 45}.get(quality, 65)
+    try:
+        im = Image.open(src_path)
+    except Exception:
+        raise ConversionError("Could not read this image")
+    stem = Path(src_path).stem
+    if im.mode in ("RGBA", "LA", "P"):  # keep transparency -> optimized PNG
+        out = os.path.join(workdir, stem + ".png")
+        im.save(out, "PNG", optimize=True)
+        return out, "image/png", stem + ".png"
+    if im.mode != "RGB":
+        im = im.convert("RGB")
+    out = os.path.join(workdir, stem + ".jpg")
+    im.save(out, "JPEG", quality=q, optimize=True)
+    return out, "image/jpeg", stem + ".jpg"
+
+
+def resize_image(workdir, src_path, width="", height=""):
+    try:
+        im = Image.open(src_path)
+    except Exception:
+        raise ConversionError("Could not read this image")
+    w0, h0 = im.size
+
+    def _int(v):
+        try:
+            return int(float(v))
+        except (TypeError, ValueError):
+            return None
+
+    w, h = _int(width), _int(height)
+    if not w and not h:
+        raise ConversionError("Enter a width and/or height in pixels")
+    if w and not h:
+        h = round(h0 * (w / w0))
+    elif h and not w:
+        w = round(w0 * (h / h0))
+    w = max(1, min(w, 20000))
+    h = max(1, min(h, 20000))
+    im = im.resize((w, h))
+    stem = Path(src_path).stem
+    ext = (Path(src_path).suffix or ".png").lower()
+    if ext in (".jpg", ".jpeg"):
+        fmt, suffix, media = "JPEG", ".jpg", "image/jpeg"
+        if im.mode != "RGB":
+            im = im.convert("RGB")
+    else:
+        fmt, suffix, media = "PNG", ".png", "image/png"
+    out = os.path.join(workdir, f"{stem}_{w}x{h}{suffix}")
+    im.save(out, fmt)
+    return out, media, os.path.basename(out)
+
+
+# --- Phase 2: QR code -------------------------------------------------------
+
+def qr_code(workdir, text):
+    import segno
+    text = (text or "").strip()
+    if not text:
+        raise ConversionError("Enter some text or a URL for the QR code")
+    if len(text) > 2000:
+        raise ConversionError("Text is too long for a QR code (max 2000 characters)")
+    out = os.path.join(workdir, "qr-code.png")
+    segno.make(text, error="m").save(out, scale=8, border=2)
+    return out, "image/png", "qr-code.png"
+
+
+# --- Phase 2: more PDF tools ------------------------------------------------
+
+def rotate_pdf(workdir, pdf_path, angle="90"):
+    try:
+        ang = int(angle)
+    except (TypeError, ValueError):
+        ang = 90
+    if ang not in (90, 180, 270):
+        ang = 90
+    reader = PdfReader(pdf_path)
+    writer = PdfWriter()
+    for page in reader.pages:
+        page.rotate(ang)
+        writer.add_page(page)
+    out = os.path.join(workdir, Path(pdf_path).stem + "_rotated.pdf")
+    with open(out, "wb") as f:
+        writer.write(f)
+    return out, "application/pdf", Path(pdf_path).stem + "_rotated.pdf"
+
+
+def protect_pdf(workdir, pdf_path, password=""):
+    import pikepdf
+    password = (password or "").strip()
+    if not password:
+        raise ConversionError("Enter a password to protect the PDF")
+    out = os.path.join(workdir, Path(pdf_path).stem + "_protected.pdf")
+    try:
+        with pikepdf.open(pdf_path) as pdf:
+            pdf.save(out, encryption=pikepdf.Encryption(owner=password, user=password, R=6))
+    except pikepdf.PasswordError:
+        raise ConversionError("This PDF is already password-protected — unlock it first")
+    return out, "application/pdf", Path(pdf_path).stem + "_protected.pdf"
+
+
+def unlock_pdf(workdir, pdf_path, password=""):
+    import pikepdf
+    out = os.path.join(workdir, Path(pdf_path).stem + "_unlocked.pdf")
+    try:
+        with pikepdf.open(pdf_path, password=(password or "")) as pdf:
+            pdf.save(out)
+    except pikepdf.PasswordError:
+        raise ConversionError("Wrong password, or this PDF is not password-protected")
+    return out, "application/pdf", Path(pdf_path).stem + "_unlocked.pdf"
+
+
+def pdf_to_excel(workdir, pdf_path):
+    import pdfplumber
+    from openpyxl import Workbook
+
+    wb = Workbook()
+    wb.remove(wb.active)
+    found = False
+    with pdfplumber.open(pdf_path) as pdf:
+        for i, page in enumerate(pdf.pages):
+            tables = page.extract_tables()
+            for j, table in enumerate(tables or []):
+                found = True
+                title = f"P{i + 1}" + (f"-{j + 1}" if len(tables) > 1 else "")
+                ws = wb.create_sheet(title=title[:31])
+                for row in table:
+                    ws.append(["" if c is None else str(c) for c in row])
+    if not found:
+        raise ConversionError("No tables found in this PDF. PDF to Excel works on PDFs that contain tables.")
+    out = os.path.join(workdir, Path(pdf_path).stem + ".xlsx")
+    wb.save(out)
+    return (out,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            Path(pdf_path).stem + ".xlsx")
