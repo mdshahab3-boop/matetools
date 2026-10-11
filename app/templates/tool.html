@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="tool-page wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">MateTools</a> <span>›</span> <span>{{ t.name }}</span>
+  </nav>
+
+  <section class="tool-hero">
+    <div class="tool-hero-icon">{{ t.icon }}</div>
+    <h1>{{ t.h1 }}</h1>
+    <p class="tool-tagline">{{ t.tagline }}</p>
+  </section>
+
+  <!-- The working converter, inline -->
+  <section id="tool-widget" class="tool-widget"
+           data-config='{{ widget }}' data-max-mb="{{ max_mb }}">
+    <noscript><p class="ns">Please enable JavaScript to use this converter.</p></noscript>
+  </section>
+
+  <ul class="trust-row">
+    <li>🔒 Nothing stored</li>
+    <li>🆓 No sign-up</li>
+    <li>🚫 No watermark</li>
+    <li>⚡ Done in seconds</li>
+  </ul>
+
+  <section class="howto">
+    <h2>How to {{ t.name }} online — free</h2>
+    <ol class="steps">
+      {% for step in t.steps %}
+      <li><span class="step-n">{{ loop.index }}</span><span>{{ step }}</span></li>
+      {% endfor %}
+    </ol>
+    <p class="muted">{{ t.output_note }}</p>
+  </section>
+
+  <section class="features">
+    <div class="feature-grid">
+      {% for title, body in t.features %}
+      <div class="feature"><h3>{{ title }}</h3><p>{{ body }}</p></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="faq">
+    <h2>{{ t.name }} — frequently asked questions</h2>
+    {% for q, a in t.faqs %}
+    <details><summary>{{ q }}</summary><p>{{ a }}</p></details>
+    {% endfor %}
+  </section>
+
+  {% if related %}
+  <section class="related">
+    <h2>Related tools</h2>
+    <div class="related-grid">
+      {% for r in related %}
+      <a class="related-card" href="/{{ r.slug }}">
+        <span class="tc-icon">{{ r.icon }}</span>
+        <span class="related-name">{{ r.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/tool.js"></script>
+{% endblock %}

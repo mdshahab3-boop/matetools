@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="wrap">
+    <h1>Free document tools that respect your privacy</h1>
+    <p class="hero-sub">Convert, merge, split and compress your files in seconds —
+      <strong>no account, no watermarks, completely free</strong>.</p>
+    <div class="privacy-badge">
+      🔒 Your files are processed on our server and <strong>deleted within moments</strong>. We never store, read, or share them.
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="tool-grid">
+    {% for tool in tools %}
+    <a class="tool-card" href="/{{ tool.slug }}">
+      <div class="tc-icon">{{ tool.icon }}</div>
+      <h2 class="tc-title">{{ tool.name }}</h2>
+      <p>{{ tool.card }}</p>
+      <span class="tc-cta">Open tool →</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <section class="why">
+    <h2>Why MateTools?</h2>
+    <div class="why-grid">
+      <div class="why-item"><span class="why-icon">🔒</span><h3>Private by design</h3><p>Files are processed in an isolated environment with no outbound internet, then deleted within moments.</p></div>
+      <div class="why-item"><span class="why-icon">🆓</span><h3>Genuinely free</h3><p>No sign-up, no email, no watermarks and no page limits — ever.</p></div>
+      <div class="why-item"><span class="why-icon">⚡</span><h3>Fast</h3><p>Conversions run on our own servers and finish in seconds.</p></div>
+      <div class="why-item"><span class="why-icon">🇦🇺</span><h3>Australian</h3><p>Built and hosted by MateOps, an Australian software platform.</p></div>
+    </div>
+  </section>
+
+  <section class="faq">
+    <h2>Frequently asked questions</h2>
+    <details><summary>Are these tools really free?</summary><p>Yes — every tool is completely free with no sign-up, no watermarks and no page limits.</p></details>
+    <details><summary>Do you store my files?</summary><p>No. Your files are processed on our own server and deleted within moments of finishing. We never store, read or share them.</p></details>
+    <details><summary>Do I need to create an account?</summary><p>No account and no email address are required. Just open a tool, upload, and download.</p></details>
+    <details><summary>Is it safe to upload my documents?</summary><p>Yes. Uploads run over HTTPS and files are processed in an isolated environment with no outbound internet access, then deleted immediately.</p></details>
+  </section>
+</main>
+{% endblock %}

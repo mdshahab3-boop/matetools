@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ page_meta }}" />
+  <link rel="canonical" href="{{ canonical }}" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="{{ brand }}" />
+  <meta property="og:title" content="{{ page_title }}" />
+  <meta property="og:description" content="{{ page_meta }}" />
+  <meta property="og:url" content="{{ canonical }}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ page_title }}" />
+  <meta name="twitter:description" content="{{ page_meta }}" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+
+  <script type="application/ld+json">{{ json_ld | safe }}</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark">MT</span>
+        <span class="brand-text">MateTools</span>
+        <span class="brand-by">by MateOps</span>
+      </a>
+      <nav class="header-nav">
+        <a href="/">All tools</a>
+        <a href="https://mateops.com.au" target="_blank" rel="noopener">MateOps ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  {% block content %}{% endblock %}
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <div class="brand">
+          <span class="brand-mark">MT</span>
+          <span class="brand-text">MateTools</span>
+        </div>
+        <p class="muted">Free, privacy-first document tools. Part of the
+          <a href="https://mateops.com.au" target="_blank" rel="noopener">MateOps</a> platform.</p>
+        <p class="muted">Files are never stored — everything runs on our own servers and is deleted within moments.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Tools</h4>
+        <ul>
+          {% for tool in tools %}
+          <li><a href="/{{ tool.slug }}">{{ tool.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="wrap footer-base">
+      <span class="muted">© 2026 MateOps · Made in Australia 🇦🇺</span>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
