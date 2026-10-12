@@ -11,21 +11,33 @@
     <p class="tool-tagline">{{ t.tagline }}</p>
   </section>
 
+  {% if is_client %}
+  <!-- Instant tool — runs entirely in the browser -->
+  <section id="client-tool" class="tool-widget" data-tool="{{ slug }}">
+    <noscript><p class="ns">Please enable JavaScript to use this tool.</p></noscript>
+  </section>
+  <ul class="trust-row">
+    <li>🔒 Runs in your browser</li>
+    <li>🆓 No sign-up</li>
+    <li>🚫 Nothing stored</li>
+    <li>⚡ Instant</li>
+  </ul>
+  {% else %}
   <!-- The working converter, inline -->
   <section id="tool-widget" class="tool-widget"
            data-config='{{ widget }}' data-max-mb="{{ max_mb }}">
     <noscript><p class="ns">Please enable JavaScript to use this converter.</p></noscript>
   </section>
-
   <ul class="trust-row">
     <li>🔒 Nothing stored</li>
     <li>🆓 No sign-up</li>
     <li>🚫 No watermark</li>
     <li>⚡ Done in seconds</li>
   </ul>
+  {% endif %}
 
   <section class="howto">
-    <h2>How to {{ t.name }} online — free</h2>
+    <h2>{% if is_client %}How to use the {{ t.name }}{% else %}How to {{ t.name }} online — free{% endif %}</h2>
     <ol class="steps">
       {% for step in t.steps %}
       <li><span class="step-n">{{ loop.index }}</span><span>{{ step }}</span></li>
@@ -66,5 +78,9 @@
 {% endblock %}
 
 {% block scripts %}
+{% if is_client %}
+<script src="/static/clienttools.js"></script>
+{% else %}
 <script src="/static/tool.js"></script>
+{% endif %}
 {% endblock %}

@@ -140,17 +140,19 @@ async def tool_page(request: Request, slug: str):
         raise HTTPException(404, "Page not found")
     schema = [_software_schema(slug, t), _faq_schema(t), _breadcrumb_schema(slug, t)]
     related = [{"slug": s, **TOOLS[s]} for s in t.get("related", []) if s in TOOLS]
+    is_client = bool(t.get("client"))
+    widget = None if is_client else json.dumps({
+        "endpoint": t["endpoint"], "accept": t.get("accept", ""),
+        "multiple": t.get("multiple", False), "field": t.get("field", "file"),
+        "options": t.get("options", []),
+        "mode": t.get("mode", "upload"), "input": t.get("input"),
+        "preview": t.get("preview", False), "cta": t.get("cta", "Convert"),
+    })
     return _render("tool.html", {
         "request": request, "site": SITE, "brand": BRAND, "slug": slug, "t": t,
         "tools": tool_list(), "related": related, "canonical": f"{SITE}/{slug}",
         "page_title": t["title"], "page_meta": t["meta"],
-        "widget": json.dumps({
-            "endpoint": t["endpoint"], "accept": t.get("accept", ""),
-            "multiple": t.get("multiple", False), "field": t.get("field", "file"),
-            "options": t.get("options", []),
-            "mode": t.get("mode", "upload"), "input": t.get("input"),
-            "preview": t.get("preview", False), "cta": t.get("cta", "Convert"),
-        }),
+        "is_client": is_client, "widget": widget,
         "json_ld": json.dumps(schema),
         "max_mb": MAX_UPLOAD_MB,
     })
