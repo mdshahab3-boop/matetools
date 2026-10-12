@@ -24,6 +24,11 @@
   <link rel="stylesheet" href="/static/styles.css" />
 
   <script type="application/ld+json">{{ json_ld | safe }}</script>
+  {% if cf_beacon %}
+  <!-- Cloudflare Web Analytics (privacy-friendly, no cookies) -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "{{ cf_beacon }}"}'></script>
+  {% endif %}
 </head>
 <body>
   <header class="site-header">

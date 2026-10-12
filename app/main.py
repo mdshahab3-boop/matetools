@@ -27,6 +27,9 @@ MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB", "100"))
 MAX_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 BASE = Path(__file__).parent
 templates = Jinja2Templates(directory=str(BASE / "templates"))
+# Optional Cloudflare Web Analytics token (privacy-friendly, no cookies).
+# Set CF_BEACON_TOKEN in .env to enable; left blank = no analytics script.
+templates.env.globals["cf_beacon"] = os.environ.get("CF_BEACON_TOKEN", "")
 
 app = FastAPI(title=BRAND, docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/static", StaticFiles(directory=str(BASE / "static")), name="static")
